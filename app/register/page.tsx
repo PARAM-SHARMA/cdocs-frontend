@@ -1,6 +1,24 @@
+"use client";
 import Link from "next/link";
 
+import { useState } from "react";
+import { useRegister } from "../hooks/auth";
+
 export default function RegisterPage() {
+	const registerMutation = useRegister();
+
+	const [form, setForm] = useState({
+		username: "",
+		email: "",
+		password: "",
+		c_password: "",
+	});
+
+	const handleSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+
+		registerMutation.mutate(form);
+	};
 	return (
 		<main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-zinc-50 via-white to-zinc-100 px-6 dark:from-zinc-950 dark:via-zinc-900 dark:to-black">
 			<div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white/80 p-8 shadow-xl backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70">
@@ -15,7 +33,7 @@ export default function RegisterPage() {
 					</p>
 				</div>
 
-				<form className="space-y-5">
+				<form className="space-y-5" onSubmit={handleSubmit}>
 
 					<div>
 						<label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -25,6 +43,10 @@ export default function RegisterPage() {
 						<input
 							type="text"
 							placeholder="John Doe"
+							value={form.username}
+							onChange={(e) =>
+								setForm({ ...form, username: e.target.value })
+							}
 							className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder:text-zinc-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-500"
 						/>
 					</div>
@@ -37,6 +59,10 @@ export default function RegisterPage() {
 						<input
 							type="email"
 							placeholder="you@example.com"
+							value={form.email}
+							onChange={(e) =>
+								setForm({ ...form, email: e.target.value })
+							}
 							className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder:text-zinc-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-500"
 						/>
 					</div>
@@ -49,6 +75,10 @@ export default function RegisterPage() {
 						<input
 							type="password"
 							placeholder="••••••••"
+							value={form.password}
+							onChange={(e) =>
+								setForm({ ...form, password: e.target.value })
+							}
 							className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder:text-zinc-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-500"
 						/>
 					</div>
@@ -61,6 +91,10 @@ export default function RegisterPage() {
 						<input
 							type="password"
 							placeholder="••••••••"
+							value={form.c_password}
+							onChange={(e) =>
+								setForm({ ...form, c_password: e.target.value })
+							}
 							className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder:text-zinc-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:placeholder:text-zinc-500"
 						/>
 					</div>
@@ -68,8 +102,11 @@ export default function RegisterPage() {
 					<button
 						type="submit"
 						className="w-full rounded-xl bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30"
+						disabled={registerMutation.isPending}
 					>
-						Create Account
+						{registerMutation.isPending
+							? "Creating..."
+							: "Create Account"}
 					</button>
 
 				</form>

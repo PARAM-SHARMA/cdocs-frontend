@@ -3,8 +3,18 @@
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import ThemeToggle from "../../components/ThemeToggle";
+import { useEffect, useRef } from "react";
+import { CRDTManager } from "@/app/crdt/manager";
 
 export default function DocumentEditorPage() {
+	const crdtRef = useRef<CRDTManager | null>(null);
+
+
+	if (!crdtRef.current) {
+		crdtRef.current = new CRDTManager();
+	}
+
+
 	const editor = useEditor({
 		extensions: [StarterKit],
 		content: `
@@ -19,7 +29,90 @@ export default function DocumentEditorPage() {
 		},
 	});
 
-	if (!editor) return null;
+
+	useEffect(() => {
+
+		if (!editor) return;
+
+
+		const handler = ({ transaction }: any) => {
+
+			if (!transaction.docChanged) {
+				return;
+			}
+
+
+			transaction.steps.forEach((step: any) => {
+
+				if (
+					step.slice &&
+					step.slice.content.size > 0
+				) {
+
+					const insertedText =
+						step.slice.content.textBetween(
+							0,
+							step.slice.content.size
+						);
+
+					if (insertedText) {
+
+						const operations =
+							crdtRef.current?.insertText(
+								insertedText
+							);
+
+						console.log(
+							"Insert operations:",
+							operations
+						);
+					}
+				} else {
+					const operation =
+						crdtRef.current?.deleteLastChar();
+
+					console.log(
+						"Delete operation:",
+						operation
+					);
+				}
+			});
+
+			console.log(
+				"CRDT state:",
+				crdtRef.current?.doc.chars
+			);
+
+			console.log(
+				"CRDT text:",
+				crdtRef.current?.doc.toText()
+			);
+		};
+
+
+		editor.on(
+			"transaction",
+			handler
+		);
+
+
+		return () => {
+
+			editor.off(
+				"transaction",
+				handler
+			);
+
+		};
+
+	}, [editor]);
+
+
+
+	if (!editor) {
+		return null;
+	}
+
 
 	return (
 		<main className="min-h-screen bg-gradient-to-b from-zinc-50 via-white to-zinc-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-black">

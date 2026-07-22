@@ -1,5 +1,5 @@
 import { clientId, nextSequence } from "./client";
-import { InsertOperation } from "./type";
+import { InsertOperation, DeleteOperation } from "./type";
 
 export function createInsert(
 	left: string,
@@ -15,5 +15,20 @@ export function createInsert(
 		value,
 		clientId,
 		seq,
+	};
+}
+
+export function createDelete(
+	charId: string
+): DeleteOperation {
+
+	const seq = nextSequence();
+
+	return {
+		type: "delete",
+		opId: crypto.randomUUID(),
+		clientId,
+		seq,
+		charId,
 	};
 }
