@@ -5,22 +5,27 @@ import StarterKit from "@tiptap/starter-kit";
 import ThemeToggle from "../../components/ThemeToggle";
 import { useEffect, useRef } from "react";
 import { CRDTManager } from "@/app/crdt/manager";
+import { useParams } from "next/navigation";
+import { useDocumentSocket } from "../../hooks/useDocumentSocket";
 
 export default function DocumentEditorPage() {
 	const crdtRef = useRef<CRDTManager | null>(null);
+	const param = useParams();
+	const documentId = param.id as string;
+
+
+	const { socket, message } =
+		useDocumentSocket(documentId);
 
 
 	if (!crdtRef.current) {
 		crdtRef.current = new CRDTManager();
 	}
+	console.log('page', message);
 
 
 	const editor = useEditor({
 		extensions: [StarterKit],
-		content: `
-			<h1>Untitled Document</h1>
-			<p>Start writing here...</p>
-		`,
 		editorProps: {
 			attributes: {
 				class:
@@ -31,9 +36,28 @@ export default function DocumentEditorPage() {
 
 
 	useEffect(() => {
+		console.log({
+			editorReady: !!editor,
+			message,
+		});
+
+		if (!editor || !message) return;
+
+
+		if (message.type === "init") {
+			console.log("setting content");
+			editor.commands.setContent(message.document);
+		}
+
+		if (message.type === "document_state") {
+			console.log("setting content");
+			editor.commands.setContent(message.document);
+		}
+	}, [editor, message]);
+
+	useEffect(() => {
 
 		if (!editor) return;
-
 
 		const handler = ({ transaction }: any) => {
 
